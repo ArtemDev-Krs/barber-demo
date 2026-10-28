@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blade &amp; Co. — Barber Shop</title>
+<meta name="description" content="Blade & Co. — барбершоп для тех, кто ценит классику и характер.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Playfair+Display:ital,wght@0,500;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>:root {
+  --bg: #0c0b0a;
+  --bg-2: #14120f;
+  --paper: #efe6d4;
+  --muted: #9a917f;
+  --gold: #c9a15b;
+  --red: #b0342e;
+  --display: "Oswald", "Arial Narrow", sans-serif;
+  --serif: "Playfair Display", Georgia, serif;
+  --sans: "Inter", system-ui, sans-serif;
+  --gutter: clamp(20px, 4vw, 64px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { overflow-x: clip; }
+body {
+  background: var(--bg);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-weight: 300;
+  line-height: 1.6;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+body.is-loading { overflow: hidden; height: 100vh; }
+img { display: block; width: 100%; height: 100%; object-fit: cover; }
+a { color: inherit; text-decoration: none; }
+em { font-family: var(--serif); font-style: italic; font-weight: 500; color: var(--gold); text-transform: none; }
+
+.eyebrow {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* ---------- grain ---------- */
+body::after {
+  content: "";
+  position: fixed; inset: -50%;
+  z-index: 90;
+  pointer-events: none;
+  opacity: .07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  animation: grain 1.2s steps(6) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); } 20% { transform: translate(-3%, 2%); } 40% { transform: translate(2%, -4%); }
+  60% { transform: translate(-4%, -1%); } 80% { transform: translate(3%, 3%); } 100% { transform: translate(0, 0); }
+}
+
+/* ---------- loader ---------- */
+.loader {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: grid; place-items: center; align-content: center; gap: 14px;
+  transition: transform 1.1s cubic-bezier(.76, 0, .24, 1);
+}
+.loader__name { font-family: var(--display); font-weight: 700; letter-spacing: .3em; font-size: clamp(22px, 3vw, 34px); }
+.loader__num { font-family: var(--serif); font-style: italic; color: var(--gold); font-size: 18px; }
+.loader__num b { font-weight: 500; }
+.loader__bar { width: min(240px, 60vw); height: 1px; background: rgba(239, 230, 212, .15); overflow: hidden; }
+.loader__bar i { display: block; height: 100%; background: var(--gold); transform: scaleX(0); transform-origin: left; }
+body.is-ready .loader { transform: translateY(-101%); }
+
+/* ---------- cursor ---------- */
+.cursor { position: fixed; top: 0; left: 0; z-index: 95; pointer-events: none; display: none; }
+.cursor span {
+  display: block; width: 10px; height: 10px; margin: -5px 0 0 -5px;
+  border-radius: 50%; background: var(--paper); mix-blend-mode: difference;
+  transition: width .3s, height .3s, margin .3s;
+}
+.cursor.is-big span { width: 78px; height: 78px; margin: -39px 0 0 -39px; }
+@media (hover: hover) and (pointer: fine) { .cursor { display: block; } body { cursor: none; } a { cursor: none; } }
+
+/* ---------- nav ---------- */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 80;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 22px var(--gutter);
+  mix-blend-mode: difference; color: #fff;
+  font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+}
+.nav__logo { font-family: var(--display); font-weight: 700; letter-spacing: .3em; font-size: 14px; }
+.nav nav { display: flex; gap: clamp(16px, 3vw, 40px); }
+.nav nav a { position: relative; }
+.nav nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform .4s; }
+.nav nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+/* ---------- hero ---------- */
+.hero { height: 280vh; position: relative; }
+.hero__stick {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: grid; place-items: center;
+  background: radial-gradient(ellipse at 50% 60%, #1c1813 0%, var(--bg) 70%);
+}
+.hero__eyebrow { position: absolute; top: 14vh; left: 0; right: 0; text-align: center; opacity: 0; transition: opacity 1s 1.4s; }
+body.is-ready .hero__eyebrow { opacity: 1; }
+.hero__title {
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  font-family: var(--display); font-weight: 700; text-transform: uppercase;
+  font-size: clamp(88px, 21vw, 340px); line-height: .84; letter-spacing: -.01em;
+  pointer-events: none;
+}
+.hero__row { display: block; white-space: nowrap; }
+.hero__row--amp { color: transparent; -webkit-text-stroke: 1.5px var(--paper); }
+.hero__row .ch { display: inline-block; transform: translateY(110%); opacity: 0; transition: transform 1.2s cubic-bezier(.16, 1, .3, 1), opacity .8s; will-change: transform; }
+body.is-ready .hero__row .ch { transform: none; opacity: 1; }
+.hero__row .ch.is-scrub { transition: none; }
+
+.scissors {
+  position: relative; z-index: 2;
+  height: min(78vh, 90vw); width: auto;
+  stroke: var(--gold); stroke-width: 2.4;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, .6));
+}
+.sc-draw { stroke-dasharray: 1; stroke-dashoffset: 1; }
+body.is-ready .sc-draw { animation: draw 2.2s .5s cubic-bezier(.65, 0, .35, 1) forwards; }
+.sc-fill { fill: rgba(201, 161, 91, 0); transition: fill 1.2s 2s; }
+body.is-ready .sc-fill { fill: rgba(201, 161, 91, .22); }
+.sc-pin { fill: var(--gold); stroke: none; opacity: 0; transition: opacity .6s 2s; }
+body.is-ready .sc-pin { opacity: 1; }
+[data-sc] { transform-box: view-box; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+.hero__sub {
+  position: absolute; bottom: 12vh; left: var(--gutter);
+  max-width: 280px; font-size: 14px; color: var(--muted); z-index: 3;
+}
+.scrollhint {
+  position: absolute; bottom: 5vh; right: var(--gutter); z-index: 3;
+  display: flex; align-items: center; gap: 14px;
+  font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
+}
+.scrollhint i { width: 1px; height: 54px; background: linear-gradient(var(--gold), transparent); animation: hint 2s ease-in-out infinite; transform-origin: top; }
+@keyframes hint { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+/* ---------- manifesto ---------- */
+.manifesto { padding: 26vh var(--gutter) 22vh; max-width: 1500px; margin: 0 auto; }
+.manifesto .eyebrow { margin-bottom: 40px; }
+.manifesto__text {
+  font-family: var(--display); font-weight: 300; text-transform: uppercase;
+  font-size: clamp(30px, 5.6vw, 92px); line-height: 1.08; letter-spacing: -.005em;
+}
+.w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-right: .22em; }
+.w > span { display: inline-block; will-change: transform; }
+
+/* ---------- work ---------- */
+.work { height: 900vh; position: relative; }
+.work__stick {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center; gap: var(--gutter);
+  padding: 0 var(--gutter);
+  background: var(--bg-2);
+}
+.work__meta { position: relative; height: min(78vh, 720px); display: flex; flex-direction: column; justify-content: space-between; padding: 6vh 0 2vh; }
+.work__count { font-family: var(--display); font-weight: 300; line-height: 1; display: flex; align-items: baseline; gap: 14px; }
+.work__count b { font-weight: 300; font-size: clamp(90px, 14vw, 220px); letter-spacing: -.03em; color: transparent; -webkit-text-stroke: 1.2px var(--gold); }
+.work__count span { font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 22px; }
+.work__titles { position: relative; height: 210px; }
+.wt { position: absolute; inset: 0; overflow: hidden; }
+.wt > * { will-change: transform; }
+.wt h3 { font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: clamp(40px, 5.2vw, 84px); line-height: .94; margin-bottom: 14px; }
+.wt p { max-width: 380px; font-size: 14px; color: var(--muted); }
+
+.work__frame { position: relative; height: min(82vh, 800px); aspect-ratio: 4 / 5; justify-self: center; max-width: 100%; }
+.shot { position: absolute; inset: 0; overflow: hidden; clip-path: inset(100% 0 0 0); will-change: clip-path; background: #000; }
+.shot img { transform: scale(1.35); will-change: transform; }
+.work__outline { position: absolute; inset: -14px; width: calc(100% + 28px); height: calc(100% + 28px); pointer-events: none; overflow: visible; }
+.work__outline rect { fill: none; stroke: var(--gold); stroke-width: 1; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.work__bar { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 4vh; height: 1px; background: rgba(239, 230, 212, .14); }
+.work__bar i { display: block; height: 100%; background: var(--gold); transform: scaleX(0); transform-origin: left; }
+
+/* ---------- services (horizontal) ---------- */
+.services { height: 520vh; position: relative; background: var(--paper); color: #17130e; }
+.services__stick { position: sticky; top: 0; height: 100vh; overflow: hidden; display: flex; align-items: center; }
+.services__head { position: absolute; top: 12vh; left: var(--gutter); z-index: 3; }
+.services__head h2 { margin-top: 12px; font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: clamp(40px, 6vw, 96px); line-height: .95; }
+.services__head em { color: var(--red); }
+.services__head .eyebrow { color: var(--red); }
+.services__track { display: flex; gap: clamp(20px, 3vw, 48px); padding: 24vh var(--gutter) 0 max(var(--gutter), 38vw); will-change: transform; }
+.card {
+  flex: 0 0 clamp(280px, 28vw, 420px); height: min(52vh, 460px);
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 12px;
+  padding: 28px; position: relative; background: #17130e; color: var(--paper);
+  clip-path: inset(0 0 0 100%); will-change: clip-path;
+}
+.card__num { position: absolute; top: 20px; right: 24px; font-family: var(--display); font-size: 64px; line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--gold); }
+.card h3 { font-family: var(--display); font-weight: 500; text-transform: uppercase; font-size: clamp(24px, 2.4vw, 34px); line-height: 1.05; }
+.card p { font-size: 14px; color: var(--muted); max-width: 290px; }
+.card__line { display: block; height: 1px; background: var(--gold); transform: scaleX(0); transform-origin: left; }
+.card b { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 28px; color: var(--gold); }
+.card--end { background: transparent; color: #17130e; border: 1px solid rgba(23, 19, 14, .35); justify-content: center; }
+.card--end h3 { font-size: clamp(30px, 3vw, 46px); }
+.card--end em { color: var(--red); }
+.card--end a { font-size: 12px; letter-spacing: .24em; text-transform: uppercase; border-bottom: 1px solid currentColor; align-self: flex-start; padding-bottom: 4px; }
+.services__bar { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 5vh; height: 1px; background: rgba(23, 19, 14, .2); }
+.services__bar i { display: block; height: 100%; background: var(--red); transform: scaleX(0); transform-origin: left; }
+
+/* ---------- moments ---------- */
+.moments { padding: 22vh var(--gutter) 18vh; background: var(--bg); }
+.moments__title { font-family: var(--display); font-weight: 300; text-transform: uppercase; font-size: clamp(32px, 6vw, 100px); line-height: 1.05; max-width: 14ch; margin-bottom: 14vh; }
+.moments__grid { position: relative; display: grid; grid-template-columns: repeat(12, 1fr); gap: 0 2vw; align-items: start; }
+.m figcaption { margin-top: 12px; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--muted); }
+.m figure { aspect-ratio: 4 / 5; overflow: hidden; clip-path: inset(100% 0 0 0); will-change: clip-path; }
+.m img { transform: scale(1.3); will-change: transform; }
+.m--1 { grid-column: 1 / 6; }
+.m--2 { grid-column: 8 / 12; margin-top: 18vh; }
+.m--3 { grid-column: 2 / 6; margin-top: 8vh; }
+.m--4 { grid-column: 7 / 13; margin-top: 22vh; }
+.m--4 figure { aspect-ratio: 1 / 1; }
+
+/* ---------- marquee ---------- */
+.marquee { padding: 10vh 0; overflow: hidden; background: var(--bg); border-top: 1px solid rgba(239, 230, 212, .1); }
+.marquee__row { display: flex; width: max-content; will-change: transform; }
+.marquee__row span { white-space: nowrap; font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: clamp(60px, 11vw, 180px); line-height: 1.05; color: var(--paper); }
+.marquee__row--out span { color: transparent; -webkit-text-stroke: 1.5px var(--gold); }
+
+/* ---------- contact ---------- */
+.contact { padding: 18vh var(--gutter) 6vh; background: var(--red); color: #fff; position: relative; overflow: hidden; }
+.contact .eyebrow { color: rgba(255, 255, 255, .75); }
+.contact__big { margin: 3vh 0 12vh; font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: clamp(60px, 15vw, 260px); line-height: .9; }
+.contact__cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; border-top: 1px solid rgba(255, 255, 255, .35); padding-top: 32px; }
+.contact__cols h4 { font-size: 12px; letter-spacing: .26em; text-transform: uppercase; font-weight: 400; margin-bottom: 12px; opacity: .75; }
+.contact__cols p { font-size: 17px; }
+.contact__cols a { border-bottom: 1px solid rgba(255, 255, 255, .5); }
+.contact__copy { margin-top: 12vh; font-size: 12px; opacity: .65; }
+
+/* ---------- fade helper ---------- */
+[data-fade] { opacity: 0; transform: translateY(24px); will-change: opacity, transform; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 820px) {
+  .nav nav a:not(:last-child) { display: none; }
+  .hero__sub { bottom: 14vh; max-width: 200px; font-size: 13px; }
+  .work__stick { grid-template-columns: 1fr; grid-template-rows: auto 1fr; align-content: center; gap: 18px; padding-top: 70px; }
+  .work__frame { height: min(50vh, 120vw); order: 1; }
+  .work__meta { order: 2; height: auto; gap: 8px; padding: 0; flex-direction: row; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
+  .work__meta .eyebrow { display: none; }
+  .work__count b { font-size: 76px; }
+  .work__titles { height: 150px; width: 100%; order: 3; }
+  .wt h3 { font-size: 34px; }
+  .services__track { padding-left: 24px; padding-top: 28vh; }
+  .card { flex-basis: 78vw; height: 46vh; }
+  .m--1 { grid-column: 1 / 9; } .m--2 { grid-column: 6 / 13; margin-top: 8vh; }
+  .m--3 { grid-column: 1 / 8; margin-top: 6vh; } .m--4 { grid-column: 4 / 13; margin-top: 8vh; }
+  .contact__cols { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::after { animation: none; }
+  .scrollhint i { animation: none; }
+}
+</style>
+</head>
+<body class="is-loading">
+
+<div class="loader" aria-hidden="true">
+  <span class="loader__name">BLADE &amp; CO.</span>
+  <span class="loader__num"><b data-count>0</b>%</span>
+  <i class="loader__bar"><i data-bar></i></i>
+</div>
+
+<div class="cursor" aria-hidden="true"><span></span></div>
+
+<header class="nav">
+  <a href="#top" class="nav__logo">Blade &amp; Co.</a>
+  <nav>
+    <a href="#work">Работы</a>
+    <a href="#services">Услуги</a>
+    <a href="#contact">Запись</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero" data-hero>
+    <div class="hero__stick">
+      <p class="eyebrow hero__eyebrow">Barber Shop · Est. 2018</p>
+
+      <h1 class="hero__title" aria-label="Blade &amp; Co.">
+        <span class="hero__row" data-chars>BLADE</span>
+        <span class="hero__row hero__row--amp" data-chars>&amp;&nbsp;CO.</span>
+      </h1>
+
+      <svg class="scissors" viewBox="0 0 400 420" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <g data-sc="a"><path class="sc-fill sc-draw" pathLength="1" d="M190 230 C192 160 196 90 201 20 C206 90 210 160 210 230 Z"/>
+            <path class="sc-draw" pathLength="1" d="M197 230 C197 270 180 295 170 315"/>
+            <ellipse class="sc-draw" pathLength="1" cx="162" cy="346" rx="26" ry="31"/></g>
+        <g data-sc="b"><g transform="translate(400 0) scale(-1 1)"><path class="sc-fill sc-draw" pathLength="1" d="M190 230 C192 160 196 90 201 20 C206 90 210 160 210 230 Z"/>
+            <path class="sc-draw" pathLength="1" d="M197 230 C197 270 180 295 170 315"/>
+            <ellipse class="sc-draw" pathLength="1" cx="162" cy="346" rx="26" ry="31"/></g></g>
+        <circle class="sc-pin" cx="200" cy="230" r="7"/>
+      </svg>
+
+      <p class="hero__sub">Классические стрижки.<br>Горячее бритьё. Характер.</p>
+      <div class="scrollhint"><span>Scroll</span><i></i></div>
+    </div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <section class="manifesto">
+    <p class="eyebrow" data-fade>— Манифест</p>
+    <h2 class="manifesto__text" data-words>Мы не просто стрижём волосы. Мы собираем характер — линия за линией, движение за движением.</h2>
+  </section>
+
+  <!-- WORK: scrubbed gallery -->
+  <section class="work" id="work" data-work>
+    <div class="work__stick">
+      <div class="work__meta">
+        <p class="eyebrow">Избранные работы</p>
+        <p class="work__count"><b data-cur>01</b><span>/ 06</span></p>
+        <div class="work__titles">
+          <div class="wt" data-wt><h3>Classic<br>Fade</h3><p>Чистый переход и выверенные пропорции. Классика, которая не стареет.</p></div>
+          <div class="wt" data-wt><h3>Scissor<br>Cut</h3><p>Работа ножницами по форме головы. Никакой машинки — только рука мастера.</p></div>
+          <div class="wt" data-wt><h3>Hot<br>Shave</h3><p>Горячее полотенце, пена и опасная бритва. Ритуал на 40 минут.</p></div>
+          <div class="wt" data-wt><h3>Beard<br>Sculpt</h3><p>Моделирование бороды: линия, объём, уход маслом и бальзамом.</p></div>
+          <div class="wt" data-wt><h3>The<br>Chair</h3><p>Кожа, хром и тишина. Место, где время идёт по-другому.</p></div>
+          <div class="wt" data-wt><h3>The<br>Ritual</h3><p>Помазок, пена, аромат. Мелочи, из которых складывается впечатление.</p></div>
+        </div>
+      </div>
+
+      <div class="work__frame" data-cursor="drag">
+        <figure class="shot"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMTU0NzRhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMGExZTIwIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxwYXR0ZXJuIGlkPSJzdCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSgtMzgpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNmMWU5ZDgiLz48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjYjAzNDJlIi8+PHJlY3QgeD0iNDAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNmMWU5ZDgiLz48cmVjdCB4PSI4MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzFlM2Y3MyIvPgogICAgPC9wYXR0ZXJuPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnbGFzcyIgeDE9IjAiIHgyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMwMDAiIHN0b3Atb3BhY2l0eT0iLjQ1Ii8+PHN0b3Agb2Zmc2V0PSIuMjUiIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iLjI4Ii8+PHN0b3Agb2Zmc2V0PSIuNDUiIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwMCIgc3RvcC1vcGFjaXR5PSIuNTUiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnb2xkIiB4MT0iMCIgeDI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzhhNmEyZSIvPjxzdG9wIG9mZnNldD0iLjUiIHN0b3AtY29sb3I9IiNmMGQxOGIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4YTZhMmUiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0iZyI+PGZlVHVyYnVsZW5jZSBiYXNlRnJlcXVlbmN5PSIuODUiIG51bU9jdGF2ZXM9IjIiIHNlZWQ9IjMiLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJzYXR1cmF0ZSIgdmFsdWVzPSIwIi8+PC9maWx0ZXI+CiAgICA8Y2xpcFBhdGggaWQ9InR1YmUiPjxyZWN0IHg9IjMzMCIgeT0iMjMwIiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjU0MCIgcng9IjgiLz48L2NsaXBQYXRoPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iNTAwIiByPSIzMzAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2M5YTE1YiIgc3Ryb2tlLW9wYWNpdHk9Ii41IiBzdHJva2Utd2lkdGg9IjIiLz4KICA8Y2lyY2xlIGN4PSI0MDAiIGN5PSI1MDAiIHI9IjI5MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzlhMTViIiBzdHJva2Utb3BhY2l0eT0iLjI1IiBzdHJva2Utd2lkdGg9IjEiLz4KICA8ZWxsaXBzZSBjeD0iNDAwIiBjeT0iODYwIiByeD0iMTgwIiByeT0iMjYiIGZpbGw9IiMwMDAiIG9wYWNpdHk9Ii40NSIvPgogIDxnIGNsaXAtcGF0aD0idXJsKCN0dWJlKSI+PHJlY3QgeD0iMzMwIiB5PSIyMzAiIHdpZHRoPSIxNDAiIGhlaWdodD0iNTQwIiBmaWxsPSJ1cmwoI3N0KSIvPjwvZz4KICA8cmVjdCB4PSIzMzAiIHk9IjIzMCIgd2lkdGg9IjE0MCIgaGVpZ2h0PSI1NDAiIHJ4PSI4IiBmaWxsPSJ1cmwoI2dsYXNzKSIvPgogIDxyZWN0IHg9IjMxMiIgeT0iMTkwIiB3aWR0aD0iMTc2IiBoZWlnaHQ9IjUyIiByeD0iMTQiIGZpbGw9InVybCgjZ29sZCkiLz4KICA8cmVjdCB4PSIzMTIiIHk9Ijc1OCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSI1MiIgcng9IjE0IiBmaWxsPSJ1cmwoI2dvbGQpIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTYwIiByPSIzOCIgZmlsbD0idXJsKCNnb2xkKSIvPgogIDxyZWN0IHg9IjM4MCIgeT0iODEwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9InVybCgjZ29sZCkiLz4KICA8cmVjdCB4PSIzMDAiIHk9Ijg1MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMCIgcng9IjEwIiBmaWxsPSJ1cmwoI2dvbGQpIi8+CiAgPHRleHQgeD0iNDAwIiB5PSI5MzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLCBzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmb250LXNpemU9IjMwIiBsZXR0ZXItc3BhY2luZz0iOCIgZmlsbD0iI2M5YTE1YiI+c2luY2UgMjAxODwvdGV4dD4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbHRlcj0idXJsKCNnKSIgb3BhY2l0eT0iLjEiLz4KPC9zdmc+Cg==" alt="Classic fade"></figure>
+        <figure class="shot"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnIiBjeD0iLjUiIGN5PSIuNCIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzdhMjAyMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzJhMDkwOSIvPjwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdvbGQiIHgxPSIwIiB4Mj0iMSIgeTE9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmM2Q5OTYiLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjYjk4YzQyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNmU1MjIyIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxmaWx0ZXIgaWQ9ImciPjxmZVR1cmJ1bGVuY2UgYmFzZUZyZXF1ZW5jeT0iLjg1IiBudW1PY3RhdmVzPSIyIiBzZWVkPSI4Ii8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPgogICAgPGcgaWQ9ImhhbGYiPgogICAgICA8cGF0aCBkPSJNMzgyIDUyMCBDMzg0IDM4MCAzOTIgMjQwIDQwMiAxMDAgQzQxMiAyNDAgNDIwIDM4MCA0MjAgNTIwIFoiIGZpbGw9IiNlOGQ5YjQiLz4KICAgICAgPHBhdGggZD0iTTQwMiAxMDAgQzQxMiAyNDAgNDIwIDM4MCA0MjAgNTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuNyIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICAgIDxwYXRoIGQ9Ik0zOTIgNTIwIEMzOTIgNjAwIDM1OCA2NTAgMzM4IDY5MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2dvbGQpIiBzdHJva2Utd2lkdGg9IjIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPGVsbGlwc2UgY3g9IjMyNiIgY3k9Ijc1MiIgcng9IjU0IiByeT0iNjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNnb2xkKSIgc3Ryb2tlLXdpZHRoPSIyMiIvPgogICAgPC9nPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPGcgc3Ryb2tlPSIjYzlhMTViIiBzdHJva2Utb3BhY2l0eT0iLjIyIiBmaWxsPSJub25lIj4KICAgIDxjaXJjbGUgY3g9IjQwMCIgY3k9IjUyMCIgcj0iMjAwIi8+PGNpcmNsZSBjeD0iNDAwIiBjeT0iNTIwIiByPSIzMDAiLz48Y2lyY2xlIGN4PSI0MDAiIGN5PSI1MjAiIHI9IjQwMCIvPgogIDwvZz4KICA8ZyB0cmFuc2Zvcm09InJvdGF0ZSgtMTQgNDAwIDUyMCkiPgogICAgPHVzZSBocmVmPSIjaGFsZiIgdHJhbnNmb3JtPSJyb3RhdGUoMTUgNDAwIDUyMCkiLz4KICAgIDx1c2UgaHJlZj0iI2hhbGYiIHRyYW5zZm9ybT0icm90YXRlKC0xNSA0MDAgNTIwKSB0cmFuc2xhdGUoODAwIDApIHNjYWxlKC0xIDEpIi8+CiAgICA8Y2lyY2xlIGN4PSI0MDAiIGN5PSI1MjAiIHI9IjIwIiBmaWxsPSJ1cmwoI2dvbGQpIi8+PGNpcmNsZSBjeD0iNDAwIiBjeT0iNTIwIiByPSI3IiBmaWxsPSIjMmEwOTA5Ii8+CiAgPC9nPgogIDx0ZXh0IHg9IjQwMCIgeT0iOTQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iR2VvcmdpYSwgc2VyaWYiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZm9udC1zaXplPSIzMCIgbGV0dGVyLXNwYWNpbmc9IjgiIGZpbGw9IiNjOWExNWIiPnNjaXNzb3IgY3V0PC90ZXh0PgogIDxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iMTAwMCIgZmlsdGVyPSJ1cmwoI2cpIiBvcGFjaXR5PSIuMSIvPgo8L3N2Zz4K" alt="Scissor cut"></figure>
+        <figure class="shot"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZWVlNGNmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjYzliODk4Ii8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic3RlZWwiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmYWZhZmEiLz48c3RvcCBvZmZzZXQ9Ii40NSIgc3RvcC1jb2xvcj0iI2E5YWRiMiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzVlNjQ2YiIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Indvb2QiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM0YTJhMTciLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjMmExNzBjIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNGEyYTE3Ii8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxmaWx0ZXIgaWQ9ImciPjxmZVR1cmJ1bGVuY2UgYmFzZUZyZXF1ZW5jeT0iLjg1IiBudW1PY3RhdmVzPSIyIiBzZWVkPSI1Ii8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZDhjZGI2IiBzdHJva2Utd2lkdGg9IjMiPgogICAgPGNpcmNsZSBjeD0iMjYwIiBjeT0iNzYwIiByPSI5MCIvPjxjaXJjbGUgY3g9IjM2MCIgY3k9IjgwMCIgcj0iODAiLz48Y2lyY2xlIGN4PSI0NTAiIGN5PSI3NjAiIHI9Ijk1Ii8+PGNpcmNsZSBjeD0iMzQwIiBjeT0iNzIwIiByPSI4NSIvPjxjaXJjbGUgY3g9IjU0MCIgY3k9IjgxMCIgcj0iNzAiLz48Y2lyY2xlIGN4PSIxNzAiIGN5PSI4MTAiIHI9IjcwIi8+CiAgPC9nPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0zMiA0MDAgNDIwKSI+CiAgICA8cGF0aCBkPSJNMTUwIDM4MCBMNTYwIDM4MCBRNTg1IDM4MCA1OTAgNDEwIEw1OTAgNDUwIEwxNTAgNDUwIFExMjAgNDQwIDE1MCAzODAgWiIgZmlsbD0idXJsKCNzdGVlbCkiLz4KICAgIDxwYXRoIGQ9Ik0xNTAgMzgwIEw1NjAgMzgwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPHBhdGggZD0iTTE1MCA0NTIgTDU5MCA0NTIiIHN0cm9rZT0iIzJmMzQzYSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIuNiIvPgogICAgPHJlY3QgeD0iNTYwIiB5PSIzNjAiIHdpZHRoPSIzOCIgaGVpZ2h0PSIxMDAiIHJ4PSI4IiBmaWxsPSJ1cmwoI3N0ZWVsKSIvPgogICAgPHBhdGggZD0iTTU5OCAzNzIgTDc2MCAzMzAgUTc5MCAzMzAgNzkwIDM3MCBMNzkwIDQ0MCBRNzkwIDQ4MCA3NjAgNDgwIEw1OTggNDQ4IFoiIGZpbGw9InVybCgjd29vZCkiLz4KICAgIDxwYXRoIGQ9Ik02MjAgMzk1IEw3NzAgMzcyIiBzdHJva2U9IiNjOWExNWIiIHN0cm9rZS1vcGFjaXR5PSIuNTUiIHN0cm9rZS13aWR0aD0iMyIvPgogICAgPGNpcmNsZSBjeD0iNTc4IiBjeT0iNDEwIiByPSIxMiIgZmlsbD0iI2M5YTE1YiIvPjxjaXJjbGUgY3g9IjU3OCIgY3k9IjQxMCIgcj0iNCIgZmlsbD0iIzRhMmExNyIvPgogIDwvZz4KICA8dGV4dCB4PSI0MDAiIHk9Ijk0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXN0eWxlPSJpdGFsaWMiIGZvbnQtc2l6ZT0iMzAiIGxldHRlci1zcGFjaW5nPSI4IiBmaWxsPSIjNmI1YTNhIj5ob3Qgc2hhdmU8L3RleHQ+CiAgPHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSIxMDAwIiBmaWx0ZXI9InVybCgjZykiIG9wYWNpdHk9Ii4xMiIvPgo8L3N2Zz4K" alt="Hot shave"></figure>
+        <figure class="shot"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMWIxYTE5Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDcwNzA3Ii8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZCIgeDE9IjAiIHgyPSIxIiB5MT0iMCIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2YzZDk5NiIvPjxzdG9wIG9mZnNldD0iLjUiIHN0b3AtY29sb3I9IiNiOThjNDIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2ZTUyMjIiLz48L2xpbmVhckdyYWRpZW50PgogICAgPHBhdHRlcm4gaWQ9InRlZXRoIiB3aWR0aD0iMjYiIGhlaWdodD0iMzAwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iMzAwIiByeD0iOCIgZmlsbD0idXJsKCNnb2xkKSIvPjwvcGF0dGVybj4KICAgIDxmaWx0ZXIgaWQ9ImciPjxmZVR1cmJ1bGVuY2UgYmFzZUZyZXF1ZW5jeT0iLjg1IiBudW1PY3RhdmVzPSIyIiBzZWVkPSIxMSIvPjxmZUNvbG9yTWF0cml4IHR5cGU9InNhdHVyYXRlIiB2YWx1ZXM9IjAiLz48L2ZpbHRlcj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSIxMDAwIiBmaWxsPSJ1cmwoI2JnKSIvPgogIDxnIHN0cm9rZT0iI2M5YTE1YiIgc3Ryb2tlLW9wYWNpdHk9Ii4yOCIgZmlsbD0ibm9uZSI+CiAgICA8cGF0aCBkPSJNMCAyMDAgUTQwMCA2MCA4MDAgMjAwIi8+PHBhdGggZD0iTTAgMjQwIFE0MDAgMTAwIDgwMCAyNDAiLz48cGF0aCBkPSJNMCAyODAgUTQwMCAxNDAgODAwIDI4MCIvPgogICAgPHBhdGggZD0iTTAgNzYwIFE0MDAgOTAwIDgwMCA3NjAiLz48cGF0aCBkPSJNMCA4MDAgUTQwMCA5NDAgODAwIDgwMCIvPgogIDwvZz4KICA8ZyB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgNDAwIDUwMCkiPgogICAgPHJlY3QgeD0iMTIwIiB5PSIzNDAiIHdpZHRoPSI1NjAiIGhlaWdodD0iMTEwIiByeD0iNDYiIGZpbGw9InVybCgjZ29sZCkiLz4KICAgIDxyZWN0IHg9IjEyMCIgeT0iNDQwIiB3aWR0aD0iNTQ2IiBoZWlnaHQ9IjMwMCIgZmlsbD0idXJsKCN0ZWV0aCkiLz4KICAgIDxyZWN0IHg9IjE1MCIgeT0iMzcyIiB3aWR0aD0iNTAwIiBoZWlnaHQ9IjYiIHJ4PSIzIiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIuNSIvPgogICAgPGcgZmlsbD0iIzAwMCIgb3BhY2l0eT0iLjM1Ij48cmVjdCB4PSIxMjAiIHk9IjQ0MCIgd2lkdGg9IjU2MCIgaGVpZ2h0PSIxNCIvPjwvZz4KICA8L2c+CiAgPHRleHQgeD0iNDAwIiB5PSI5NDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLCBzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmb250LXNpemU9IjMwIiBsZXR0ZXItc3BhY2luZz0iOCIgZmlsbD0iI2M5YTE1YiI+YmVhcmQgc2N1bHB0PC90ZXh0PgogIDxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iMTAwMCIgZmlsdGVyPSJ1cmwoI2cpIiBvcGFjaXR5PSIuMTQiLz4KPC9zdmc+Cg==" alt="Beard sculpt"></figure>
+        <figure class="shot"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMmE0NjMxIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMGYxZDE0Ii8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ibGVhdGhlciIgeDE9IjAiIHgyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM1YTFhMTYiLz48c3RvcCBvZmZzZXQ9Ii40IiBzdG9wLWNvbG9yPSIjOWMyZjI3Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNGExNDEwIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iY2hyb21lIiB4MT0iMCIgeDI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzZjNzE3OCIvPjxzdG9wIG9mZnNldD0iLjQiIHN0b3AtY29sb3I9IiNmNGY0ZjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM1NTVhNjEiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnb2xkIiB4MT0iMCIgeDI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzhhNmEyZSIvPjxzdG9wIG9mZnNldD0iLjUiIHN0b3AtY29sb3I9IiNmMGQxOGIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4YTZhMmUiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0iZyI+PGZlVHVyYnVsZW5jZSBiYXNlRnJlcXVlbmN5PSIuODUiIG51bU9jdGF2ZXM9IjIiIHNlZWQ9IjIiLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJzYXR1cmF0ZSIgdmFsdWVzPSIwIi8+PC9maWx0ZXI+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iMTAwMCIgZmlsbD0idXJsKCNiZykiLz4KICA8cGF0aCBkPSJNMTcwIDkwMCBMMTcwIDM4MCBBMjMwIDIzMCAwIDAgMSA2MzAgMzgwIEw2MzAgOTAwIFoiIGZpbGw9IiMwYjE2MGUiIHN0cm9rZT0idXJsKCNnb2xkKSIgc3Ryb2tlLXdpZHRoPSI2Ii8+CiAgPHBhdGggZD0iTTIxNSA5MDAgTDIxNSAzOTAgQTE4NSAxODUgMCAwIDEgNTg1IDM5MCBMNTg1IDkwMCBaIiBmaWxsPSJub25lIiBzdHJva2U9IiNjOWExNWIiIHN0cm9rZS1vcGFjaXR5PSIuMyIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPGVsbGlwc2UgY3g9IjQwMCIgY3k9Ijg4MCIgcng9IjIxMCIgcnk9IjM2IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuNSIvPgogIDxlbGxpcHNlIGN4PSI0MDAiIGN5PSI4NjAiIHJ4PSIxNTAiIHJ5PSIyNiIgZmlsbD0idXJsKCNjaHJvbWUpIi8+CiAgPHJlY3QgeD0iMzcyIiB5PSI2NDAiIHdpZHRoPSI1NiIgaGVpZ2h0PSIyMjAiIGZpbGw9InVybCgjY2hyb21lKSIvPgogIDxyZWN0IHg9IjM1MCIgeT0iNjAwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjUwIiByeD0iMTQiIGZpbGw9InVybCgjY2hyb21lKSIvPgogIDxyZWN0IHg9IjE5MCIgeT0iNTMwIiB3aWR0aD0iNDIwIiBoZWlnaHQ9IjkwIiByeD0iMzgiIGZpbGw9InVybCgjbGVhdGhlcikiLz4KICA8cmVjdCB4PSIyMTUiIHk9IjU2MCIgd2lkdGg9IjM3MCIgaGVpZ2h0PSIxNCIgcng9IjciIGZpbGw9IiNmZmYiIG9wYWNpdHk9Ii4xNSIvPgogIDxyZWN0IHg9IjE2MCIgeT0iNDgwIiB3aWR0aD0iODYiIGhlaWdodD0iNDAiIHJ4PSIxOCIgZmlsbD0idXJsKCNjaHJvbWUpIi8+CiAgPHJlY3QgeD0iNTU0IiB5PSI0ODAiIHdpZHRoPSI4NiIgaGVpZ2h0PSI0MCIgcng9IjE4IiBmaWxsPSJ1cmwoI2Nocm9tZSkiLz4KICA8cmVjdCB4PSIxODAiIHk9IjQyMCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjExMCIgcng9IjE0IiBmaWxsPSJ1cmwoI2xlYXRoZXIpIi8+CiAgPHJlY3QgeD0iNTgwIiB5PSI0MjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxMTAiIHJ4PSIxNCIgZmlsbD0idXJsKCNsZWF0aGVyKSIvPgogIDxyZWN0IHg9IjIzNiIgeT0iMjYwIiB3aWR0aD0iMzI4IiBoZWlnaHQ9IjI5MCIgcng9IjYwIiBmaWxsPSJ1cmwoI2xlYXRoZXIpIi8+CiAgPHJlY3QgeD0iMjYyIiB5PSIyOTAiIHdpZHRoPSIyNzYiIGhlaWdodD0iMjIiIHJ4PSIxMSIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iLjEyIi8+CiAgPHJlY3QgeD0iMzAwIiB5PSIxNzAiIHdpZHRoPSIyMDAiIGhlaWdodD0iOTIiIHJ4PSI0MCIgZmlsbD0idXJsKCNsZWF0aGVyKSIvPgogIDxyZWN0IHg9IjM4MCIgeT0iMjU1IiB3aWR0aD0iNDAiIGhlaWdodD0iMjIiIGZpbGw9InVybCgjY2hyb21lKSIvPgogIDxwYXRoIGQ9Ik0zMDAgODYwIEwzMDAgOTYwIE01MDAgODYwIEw1MDAgOTYwIiBzdHJva2U9Im5vbmUiLz4KICA8cmVjdCB4PSIzMzAiIHk9IjkwNSIgd2lkdGg9IjE0MCIgaGVpZ2h0PSIyMiIgcng9IjExIiBmaWxsPSJ1cmwoI2dvbGQpIi8+CiAgPHRleHQgeD0iNDAwIiB5PSI5NzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLCBzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmb250LXNpemU9IjI2IiBsZXR0ZXItc3BhY2luZz0iOCIgZmlsbD0iI2M5YTE1YiI+dGhlIGNoYWlyPC90ZXh0PgogIDxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iMTAwMCIgZmlsdGVyPSJ1cmwoI2cpIiBvcGFjaXR5PSIuMTIiLz4KPC9zdmc+Cg==" alt="The chair"></figure>
+        <figure class="shot"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnIiBjeD0iLjUiIGN5PSIuNTUiIHI9Ii44Ij48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM3YTRhMjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxZjExMDkiLz48L3JhZGlhbEdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJib3dsIiB4MT0iMCIgeDI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2NmZDJkNiIvPjxzdG9wIG9mZnNldD0iLjM1IiBzdG9wLWNvbG9yPSIjZmZmZmZmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjN2Q4MzhhIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0id29vZCIgeDE9IjAiIHgyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMzYjFmMTAiLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjN2E0YTI0Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjM2IxZjEwIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZCIgeDE9IjAiIHgyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM4YTZhMmUiLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjZjBkMThiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOGE2YTJlIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxmaWx0ZXIgaWQ9ImciPjxmZVR1cmJ1bGVuY2UgYmFzZUZyZXF1ZW5jeT0iLjg1IiBudW1PY3RhdmVzPSIyIiBzZWVkPSI5Ii8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPGVsbGlwc2UgY3g9IjQwMCIgY3k9Ijg2MCIgcng9IjI2MCIgcnk9IjMwIiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuNDUiLz4KICA8cGF0aCBkPSJNMTcwIDY0MCBRMTcwIDg1MCA0MDAgODUwIFE2MzAgODUwIDYzMCA2NDAgWiIgZmlsbD0idXJsKCNib3dsKSIvPgogIDxlbGxpcHNlIGN4PSI0MDAiIGN5PSI2NDAiIHJ4PSIyMzAiIHJ5PSI0NiIgZmlsbD0iI2U3ZTdlNyIvPgogIDxnIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2UwZGNjZiIgc3Ryb2tlLXdpZHRoPSIyIj4KICAgIDxjaXJjbGUgY3g9IjMwMCIgY3k9IjYxMCIgcj0iNTYiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSI1ODAiIHI9IjYyIi8+PGNpcmNsZSBjeD0iNDcwIiBjeT0iNjAwIiByPSI1OCIvPjxjaXJjbGUgY3g9IjUzMCIgY3k9IjYzMCIgcj0iNDIiLz48Y2lyY2xlIGN4PSIyNjAiIGN5PSI2MzYiIHI9IjQwIi8+PGNpcmNsZSBjeD0iNDAwIiBjeT0iNjQwIiByPSI2MCIvPgogIDwvZz4KICA8ZyB0cmFuc2Zvcm09InJvdGF0ZSgyNCA0MjAgNTYwKSI+CiAgICA8cGF0aCBkPSJNNDIwIDUyMCBMNDIwIDMzMCIgc3Ryb2tlPSJ1cmwoI3dvb2QpIiBzdHJva2Utd2lkdGg9IjY0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxyZWN0IHg9IjM4NCIgeT0iNDcwIiB3aWR0aD0iNzIiIGhlaWdodD0iMjYiIHJ4PSI4IiBmaWxsPSJ1cmwoI2dvbGQpIi8+CiAgICA8cGF0aCBkPSJNMzg4IDQ3OCBRMzg4IDM4MCA0MjAgMzYwIFE0NTIgMzgwIDQ1MiA0NzggWiIgZmlsbD0iI2Q5YzlhNSIvPgogICAgPHBhdGggZD0iTTM4OCA0NzggTDM4OCA1MjAgUTQyMCA1NDggNDUyIDUyMCBMNDUyIDQ3OCIgZmlsbD0iI2YxZWNlMCIvPgogICAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMiIG9wYWNpdHk9Ii41Ij48cGF0aCBkPSJNNDA0IDUwMCBMNDA0IDUzMCIvPjxwYXRoIGQ9Ik00MjAgNTAwIEw0MjAgNTM2Ii8+PHBhdGggZD0iTTQzNiA1MDAgTDQzNiA1MzAiLz48L2c+CiAgICA8cGF0aCBkPSJNNDIwIDMzMCBMNDIwIDE0MCIgc3Ryb2tlPSJub25lIi8+CiAgICA8cGF0aCBkPSJNMzk1IDMzMCBMMzk1IDIwMCBRNDIwIDE2MCA0NDUgMjAwIEw0NDUgMzMwIFoiIGZpbGw9InVybCgjd29vZCkiLz4KICA8L2c+CiAgPHRleHQgeD0iNDAwIiB5PSI5NDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLCBzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmb250LXNpemU9IjMwIiBsZXR0ZXItc3BhY2luZz0iOCIgZmlsbD0iI2U4Yzg4YSI+dGhlIHJpdHVhbDwvdGV4dD4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbHRlcj0idXJsKCNnKSIgb3BhY2l0eT0iLjEyIi8+Cjwvc3ZnPgo=" alt="The ritual"></figure>
+        <svg class="work__outline" preserveAspectRatio="none" viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="0.4" y="0.4" width="99.2" height="99.2" pathLength="1" vector-effect="non-scaling-stroke"/>
+        </svg>
+      </div>
+
+      <div class="work__bar"><i data-workbar></i></div>
+    </div>
+  </section>
+
+  <!-- SERVICES: horizontal scroll -->
+  <section class="services" id="services" data-hscroll>
+    <div class="services__stick">
+      <div class="services__head">
+        <p class="eyebrow">Услуги и цены</p>
+        <h2>Что мы<br><em>делаем</em></h2>
+      </div>
+      <div class="services__track" data-track>
+        <article class="card"><span class="card__num">01</span><h3>Мужская стрижка</h3><p>Консультация, мытьё головы, стрижка и укладка.</p><i class="card__line"></i><b>1 800 ₽</b></article>
+        <article class="card"><span class="card__num">02</span><h3>Стрижка + борода</h3><p>Полный образ: волосы, борода, окантовка и уход.</p><i class="card__line"></i><b>2 900 ₽</b></article>
+        <article class="card"><span class="card__num">03</span><h3>Королевское бритьё</h3><p>Горячее полотенце, опасная бритва, масла и бальзам.</p><i class="card__line"></i><b>2 200 ₽</b></article>
+        <article class="card"><span class="card__num">04</span><h3>Моделирование бороды</h3><p>Форма, линия, триммер и ножницы. Уход в финале.</p><i class="card__line"></i><b>1 500 ₽</b></article>
+        <article class="card"><span class="card__num">05</span><h3>Отец + сын</h3><p>Две стрижки подряд. Для тех, кто приходит вместе.</p><i class="card__line"></i><b>2 800 ₽</b></article>
+        <article class="card card--end"><h3>Нужно<br><em>что-то особенное?</em></h3><a href="#contact" data-cursor="link">Записаться →</a></article>
+      </div>
+      <div class="services__bar"><i data-svcbar></i></div>
+    </div>
+  </section>
+
+  <!-- MOMENTS: parallax -->
+  <section class="moments">
+    <h2 class="moments__title" data-words>Моменты, из которых складывается стиль</h2>
+    <div class="moments__grid">
+      <div class="m m--1" data-parallax="-0.10"><figure data-reveal><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZWVlNGNmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjYzliODk4Ii8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic3RlZWwiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmYWZhZmEiLz48c3RvcCBvZmZzZXQ9Ii40NSIgc3RvcC1jb2xvcj0iI2E5YWRiMiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzVlNjQ2YiIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Indvb2QiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM0YTJhMTciLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjMmExNzBjIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNGEyYTE3Ii8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxmaWx0ZXIgaWQ9ImciPjxmZVR1cmJ1bGVuY2UgYmFzZUZyZXF1ZW5jeT0iLjg1IiBudW1PY3RhdmVzPSIyIiBzZWVkPSI1Ii8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZDhjZGI2IiBzdHJva2Utd2lkdGg9IjMiPgogICAgPGNpcmNsZSBjeD0iMjYwIiBjeT0iNzYwIiByPSI5MCIvPjxjaXJjbGUgY3g9IjM2MCIgY3k9IjgwMCIgcj0iODAiLz48Y2lyY2xlIGN4PSI0NTAiIGN5PSI3NjAiIHI9Ijk1Ii8+PGNpcmNsZSBjeD0iMzQwIiBjeT0iNzIwIiByPSI4NSIvPjxjaXJjbGUgY3g9IjU0MCIgY3k9IjgxMCIgcj0iNzAiLz48Y2lyY2xlIGN4PSIxNzAiIGN5PSI4MTAiIHI9IjcwIi8+CiAgPC9nPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0zMiA0MDAgNDIwKSI+CiAgICA8cGF0aCBkPSJNMTUwIDM4MCBMNTYwIDM4MCBRNTg1IDM4MCA1OTAgNDEwIEw1OTAgNDUwIEwxNTAgNDUwIFExMjAgNDQwIDE1MCAzODAgWiIgZmlsbD0idXJsKCNzdGVlbCkiLz4KICAgIDxwYXRoIGQ9Ik0xNTAgMzgwIEw1NjAgMzgwIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPHBhdGggZD0iTTE1MCA0NTIgTDU5MCA0NTIiIHN0cm9rZT0iIzJmMzQzYSIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIuNiIvPgogICAgPHJlY3QgeD0iNTYwIiB5PSIzNjAiIHdpZHRoPSIzOCIgaGVpZ2h0PSIxMDAiIHJ4PSI4IiBmaWxsPSJ1cmwoI3N0ZWVsKSIvPgogICAgPHBhdGggZD0iTTU5OCAzNzIgTDc2MCAzMzAgUTc5MCAzMzAgNzkwIDM3MCBMNzkwIDQ0MCBRNzkwIDQ4MCA3NjAgNDgwIEw1OTggNDQ4IFoiIGZpbGw9InVybCgjd29vZCkiLz4KICAgIDxwYXRoIGQ9Ik02MjAgMzk1IEw3NzAgMzcyIiBzdHJva2U9IiNjOWExNWIiIHN0cm9rZS1vcGFjaXR5PSIuNTUiIHN0cm9rZS13aWR0aD0iMyIvPgogICAgPGNpcmNsZSBjeD0iNTc4IiBjeT0iNDEwIiByPSIxMiIgZmlsbD0iI2M5YTE1YiIvPjxjaXJjbGUgY3g9IjU3OCIgY3k9IjQxMCIgcj0iNCIgZmlsbD0iIzRhMmExNyIvPgogIDwvZz4KICA8dGV4dCB4PSI0MDAiIHk9Ijk0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsIHNlcmlmIiBmb250LXN0eWxlPSJpdGFsaWMiIGZvbnQtc2l6ZT0iMzAiIGxldHRlci1zcGFjaW5nPSI4IiBmaWxsPSIjNmI1YTNhIj5ob3Qgc2hhdmU8L3RleHQ+CiAgPHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSIxMDAwIiBmaWx0ZXI9InVybCgjZykiIG9wYWNpdHk9Ii4xMiIvPgo8L3N2Zz4K" alt=""></figure><figcaption>Пена и сталь</figcaption></div>
+      <div class="m m--2" data-parallax="0.14"><figure data-reveal><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnIiBjeD0iLjUiIGN5PSIuNTUiIHI9Ii44Ij48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM3YTRhMjQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxZjExMDkiLz48L3JhZGlhbEdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJib3dsIiB4MT0iMCIgeDI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2NmZDJkNiIvPjxzdG9wIG9mZnNldD0iLjM1IiBzdG9wLWNvbG9yPSIjZmZmZmZmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjN2Q4MzhhIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0id29vZCIgeDE9IjAiIHgyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMzYjFmMTAiLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjN2E0YTI0Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjM2IxZjEwIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ29sZCIgeDE9IjAiIHgyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM4YTZhMmUiLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjZjBkMThiIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOGE2YTJlIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxmaWx0ZXIgaWQ9ImciPjxmZVR1cmJ1bGVuY2UgYmFzZUZyZXF1ZW5jeT0iLjg1IiBudW1PY3RhdmVzPSIyIiBzZWVkPSI5Ii8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPGVsbGlwc2UgY3g9IjQwMCIgY3k9Ijg2MCIgcng9IjI2MCIgcnk9IjMwIiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuNDUiLz4KICA8cGF0aCBkPSJNMTcwIDY0MCBRMTcwIDg1MCA0MDAgODUwIFE2MzAgODUwIDYzMCA2NDAgWiIgZmlsbD0idXJsKCNib3dsKSIvPgogIDxlbGxpcHNlIGN4PSI0MDAiIGN5PSI2NDAiIHJ4PSIyMzAiIHJ5PSI0NiIgZmlsbD0iI2U3ZTdlNyIvPgogIDxnIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2UwZGNjZiIgc3Ryb2tlLXdpZHRoPSIyIj4KICAgIDxjaXJjbGUgY3g9IjMwMCIgY3k9IjYxMCIgcj0iNTYiLz48Y2lyY2xlIGN4PSIzODAiIGN5PSI1ODAiIHI9IjYyIi8+PGNpcmNsZSBjeD0iNDcwIiBjeT0iNjAwIiByPSI1OCIvPjxjaXJjbGUgY3g9IjUzMCIgY3k9IjYzMCIgcj0iNDIiLz48Y2lyY2xlIGN4PSIyNjAiIGN5PSI2MzYiIHI9IjQwIi8+PGNpcmNsZSBjeD0iNDAwIiBjeT0iNjQwIiByPSI2MCIvPgogIDwvZz4KICA8ZyB0cmFuc2Zvcm09InJvdGF0ZSgyNCA0MjAgNTYwKSI+CiAgICA8cGF0aCBkPSJNNDIwIDUyMCBMNDIwIDMzMCIgc3Ryb2tlPSJ1cmwoI3dvb2QpIiBzdHJva2Utd2lkdGg9IjY0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxyZWN0IHg9IjM4NCIgeT0iNDcwIiB3aWR0aD0iNzIiIGhlaWdodD0iMjYiIHJ4PSI4IiBmaWxsPSJ1cmwoI2dvbGQpIi8+CiAgICA8cGF0aCBkPSJNMzg4IDQ3OCBRMzg4IDM4MCA0MjAgMzYwIFE0NTIgMzgwIDQ1MiA0NzggWiIgZmlsbD0iI2Q5YzlhNSIvPgogICAgPHBhdGggZD0iTTM4OCA0NzggTDM4OCA1MjAgUTQyMCA1NDggNDUyIDUyMCBMNDUyIDQ3OCIgZmlsbD0iI2YxZWNlMCIvPgogICAgPGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMiIG9wYWNpdHk9Ii41Ij48cGF0aCBkPSJNNDA0IDUwMCBMNDA0IDUzMCIvPjxwYXRoIGQ9Ik00MjAgNTAwIEw0MjAgNTM2Ii8+PHBhdGggZD0iTTQzNiA1MDAgTDQzNiA1MzAiLz48L2c+CiAgICA8cGF0aCBkPSJNNDIwIDMzMCBMNDIwIDE0MCIgc3Ryb2tlPSJub25lIi8+CiAgICA8cGF0aCBkPSJNMzk1IDMzMCBMMzk1IDIwMCBRNDIwIDE2MCA0NDUgMjAwIEw0NDUgMzMwIFoiIGZpbGw9InVybCgjd29vZCkiLz4KICA8L2c+CiAgPHRleHQgeD0iNDAwIiB5PSI5NDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLCBzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmb250LXNpemU9IjMwIiBsZXR0ZXItc3BhY2luZz0iOCIgZmlsbD0iI2U4Yzg4YSI+dGhlIHJpdHVhbDwvdGV4dD4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbHRlcj0idXJsKCNnKSIgb3BhY2l0eT0iLjEyIi8+Cjwvc3ZnPgo=" alt=""></figure><figcaption>Помазок</figcaption></div>
+      <div class="m m--3" data-parallax="-0.06"><figure data-reveal><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9ImJnIiBjeD0iLjUiIGN5PSIuNCIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzdhMjAyMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzJhMDkwOSIvPjwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdvbGQiIHgxPSIwIiB4Mj0iMSIgeTE9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmM2Q5OTYiLz48c3RvcCBvZmZzZXQ9Ii41IiBzdG9wLWNvbG9yPSIjYjk4YzQyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNmU1MjIyIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxmaWx0ZXIgaWQ9ImciPjxmZVR1cmJ1bGVuY2UgYmFzZUZyZXF1ZW5jeT0iLjg1IiBudW1PY3RhdmVzPSIyIiBzZWVkPSI4Ii8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPgogICAgPGcgaWQ9ImhhbGYiPgogICAgICA8cGF0aCBkPSJNMzgyIDUyMCBDMzg0IDM4MCAzOTIgMjQwIDQwMiAxMDAgQzQxMiAyNDAgNDIwIDM4MCA0MjAgNTIwIFoiIGZpbGw9IiNlOGQ5YjQiLz4KICAgICAgPHBhdGggZD0iTTQwMiAxMDAgQzQxMiAyNDAgNDIwIDM4MCA0MjAgNTIwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIuNyIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICAgIDxwYXRoIGQ9Ik0zOTIgNTIwIEMzOTIgNjAwIDM1OCA2NTAgMzM4IDY5MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2dvbGQpIiBzdHJva2Utd2lkdGg9IjIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPGVsbGlwc2UgY3g9IjMyNiIgY3k9Ijc1MiIgcng9IjU0IiByeT0iNjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNnb2xkKSIgc3Ryb2tlLXdpZHRoPSIyMiIvPgogICAgPC9nPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPGcgc3Ryb2tlPSIjYzlhMTViIiBzdHJva2Utb3BhY2l0eT0iLjIyIiBmaWxsPSJub25lIj4KICAgIDxjaXJjbGUgY3g9IjQwMCIgY3k9IjUyMCIgcj0iMjAwIi8+PGNpcmNsZSBjeD0iNDAwIiBjeT0iNTIwIiByPSIzMDAiLz48Y2lyY2xlIGN4PSI0MDAiIGN5PSI1MjAiIHI9IjQwMCIvPgogIDwvZz4KICA8ZyB0cmFuc2Zvcm09InJvdGF0ZSgtMTQgNDAwIDUyMCkiPgogICAgPHVzZSBocmVmPSIjaGFsZiIgdHJhbnNmb3JtPSJyb3RhdGUoMTUgNDAwIDUyMCkiLz4KICAgIDx1c2UgaHJlZj0iI2hhbGYiIHRyYW5zZm9ybT0icm90YXRlKC0xNSA0MDAgNTIwKSB0cmFuc2xhdGUoODAwIDApIHNjYWxlKC0xIDEpIi8+CiAgICA8Y2lyY2xlIGN4PSI0MDAiIGN5PSI1MjAiIHI9IjIwIiBmaWxsPSJ1cmwoI2dvbGQpIi8+PGNpcmNsZSBjeD0iNDAwIiBjeT0iNTIwIiByPSI3IiBmaWxsPSIjMmEwOTA5Ii8+CiAgPC9nPgogIDx0ZXh0IHg9IjQwMCIgeT0iOTQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iR2VvcmdpYSwgc2VyaWYiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZm9udC1zaXplPSIzMCIgbGV0dGVyLXNwYWNpbmc9IjgiIGZpbGw9IiNjOWExNWIiPnNjaXNzb3IgY3V0PC90ZXh0PgogIDxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iMTAwMCIgZmlsdGVyPSJ1cmwoI2cpIiBvcGFjaXR5PSIuMSIvPgo8L3N2Zz4K" alt=""></figure><figcaption>Золотые ножницы</figcaption></div>
+      <div class="m m--4" data-parallax="0.18"><figure data-reveal><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTAwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMTU0NzRhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMGExZTIwIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxwYXR0ZXJuIGlkPSJzdCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSgtMzgpIj4KICAgICAgPHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNmMWU5ZDgiLz48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjYjAzNDJlIi8+PHJlY3QgeD0iNDAiIHdpZHRoPSI0MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNmMWU5ZDgiLz48cmVjdCB4PSI4MCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzFlM2Y3MyIvPgogICAgPC9wYXR0ZXJuPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnbGFzcyIgeDE9IjAiIHgyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMwMDAiIHN0b3Atb3BhY2l0eT0iLjQ1Ii8+PHN0b3Agb2Zmc2V0PSIuMjUiIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iLjI4Ii8+PHN0b3Agb2Zmc2V0PSIuNDUiIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwMCIgc3RvcC1vcGFjaXR5PSIuNTUiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnb2xkIiB4MT0iMCIgeDI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzhhNmEyZSIvPjxzdG9wIG9mZnNldD0iLjUiIHN0b3AtY29sb3I9IiNmMGQxOGIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM4YTZhMmUiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0iZyI+PGZlVHVyYnVsZW5jZSBiYXNlRnJlcXVlbmN5PSIuODUiIG51bU9jdGF2ZXM9IjIiIHNlZWQ9IjMiLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJzYXR1cmF0ZSIgdmFsdWVzPSIwIi8+PC9maWx0ZXI+CiAgICA8Y2xpcFBhdGggaWQ9InR1YmUiPjxyZWN0IHg9IjMzMCIgeT0iMjMwIiB3aWR0aD0iMTQwIiBoZWlnaHQ9IjU0MCIgcng9IjgiLz48L2NsaXBQYXRoPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iNTAwIiByPSIzMzAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2M5YTE1YiIgc3Ryb2tlLW9wYWNpdHk9Ii41IiBzdHJva2Utd2lkdGg9IjIiLz4KICA8Y2lyY2xlIGN4PSI0MDAiIGN5PSI1MDAiIHI9IjI5MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzlhMTViIiBzdHJva2Utb3BhY2l0eT0iLjI1IiBzdHJva2Utd2lkdGg9IjEiLz4KICA8ZWxsaXBzZSBjeD0iNDAwIiBjeT0iODYwIiByeD0iMTgwIiByeT0iMjYiIGZpbGw9IiMwMDAiIG9wYWNpdHk9Ii40NSIvPgogIDxnIGNsaXAtcGF0aD0idXJsKCN0dWJlKSI+PHJlY3QgeD0iMzMwIiB5PSIyMzAiIHdpZHRoPSIxNDAiIGhlaWdodD0iNTQwIiBmaWxsPSJ1cmwoI3N0KSIvPjwvZz4KICA8cmVjdCB4PSIzMzAiIHk9IjIzMCIgd2lkdGg9IjE0MCIgaGVpZ2h0PSI1NDAiIHJ4PSI4IiBmaWxsPSJ1cmwoI2dsYXNzKSIvPgogIDxyZWN0IHg9IjMxMiIgeT0iMTkwIiB3aWR0aD0iMTc2IiBoZWlnaHQ9IjUyIiByeD0iMTQiIGZpbGw9InVybCgjZ29sZCkiLz4KICA8cmVjdCB4PSIzMTIiIHk9Ijc1OCIgd2lkdGg9IjE3NiIgaGVpZ2h0PSI1MiIgcng9IjE0IiBmaWxsPSJ1cmwoI2dvbGQpIi8+CiAgPGNpcmNsZSBjeD0iNDAwIiBjeT0iMTYwIiByPSIzOCIgZmlsbD0idXJsKCNnb2xkKSIvPgogIDxyZWN0IHg9IjM4MCIgeT0iODEwIiB3aWR0aD0iNDAiIGhlaWdodD0iNTAiIGZpbGw9InVybCgjZ29sZCkiLz4KICA8cmVjdCB4PSIzMDAiIHk9Ijg1MCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMCIgcng9IjEwIiBmaWxsPSJ1cmwoI2dvbGQpIi8+CiAgPHRleHQgeD0iNDAwIiB5PSI5MzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLCBzZXJpZiIgZm9udC1zdHlsZT0iaXRhbGljIiBmb250LXNpemU9IjMwIiBsZXR0ZXItc3BhY2luZz0iOCIgZmlsbD0iI2M5YTE1YiI+c2luY2UgMjAxODwvdGV4dD4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjEwMDAiIGZpbHRlcj0idXJsKCNnKSIgb3BhY2l0eT0iLjEiLz4KPC9zdmc+Cg==" alt=""></figure><figcaption>Знак места</figcaption></div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <section class="marquee" aria-hidden="true">
+    <div class="marquee__row" data-marquee="1"><span>Fresh Cut · Hot Shave · Beard Care · Fresh Cut · Hot Shave · Beard Care · </span><span>Fresh Cut · Hot Shave · Beard Care · Fresh Cut · Hot Shave · Beard Care · </span></div>
+    <div class="marquee__row marquee__row--out" data-marquee="-1"><span>Blade &amp; Co. · Since 2018 · Blade &amp; Co. · Since 2018 · Blade &amp; Co. · Since 2018 · </span><span>Blade &amp; Co. · Since 2018 · Blade &amp; Co. · Since 2018 · Blade &amp; Co. · Since 2018 · </span></div>
+  </section>
+
+  <!-- CONTACT -->
+  <footer class="contact" id="contact">
+    <p class="eyebrow" data-fade>Запись и контакты</p>
+    <h2 class="contact__big" data-words>Займите кресло</h2>
+    <div class="contact__cols" data-fade>
+      <div><h4>Адрес</h4><p>ул. Примерная, 12<br>Москва</p></div>
+      <div><h4>Часы</h4><p>Пн–Сб 10:00–22:00<br>Вс 11:00–20:00</p></div>
+      <div><h4>Связь</h4><p><a href="tel:+70000000000" data-cursor="link">+7 (000) 000-00-00</a><br><a href="#" data-cursor="link">@bladeandco</a></p></div>
+    </div>
+    <p class="contact__copy">© 2018–2026 Blade &amp; Co. Сайт — учебный проект для портфолио.</p>
+  </footer>
+
+</main>
+
+<script>(() => {
+  const $ = (s, c = document) => c.querySelector(s);
+  const $$ = (s, c = document) => [...c.querySelectorAll(s)];
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const ease = (t) => 1 - Math.pow(1 - t, 3);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const LERP = reduce ? 1 : 0.085;
+
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  scrollTo({ top: 0, behavior: 'instant' });
+
+  let vw = innerWidth, vh = innerHeight;
+  let y = 0, vel = 0, lastY = -1;
+
+  /* ---------- split text ---------- */
+  $$('[data-chars]').forEach((row) => {
+    const text = row.textContent;
+    row.textContent = '';
+    [...text].forEach((c, i) => {
+      const s = document.createElement('span');
+      s.className = 'ch';
+      s.textContent = c;
+      s.style.transitionDelay = `${i * 70}ms`;
+      row.appendChild(s);
+    });
+  });
+
+  $$('[data-words]').forEach((el) => {
+    const words = el.textContent.trim().split(/\s+/);
+    el.textContent = '';
+    words.forEach((w) => {
+      const outer = document.createElement('span');
+      outer.className = 'w';
+      const inner = document.createElement('span');
+      inner.textContent = w;
+      outer.appendChild(inner);
+      el.appendChild(outer);
+    });
+  });
+
+  /* ---------- element registry ---------- */
+  const hero = $('[data-hero]');
+  const heroChars = $$('[data-chars]').map((r) => $$('.ch', r));
+  const scA = $('[data-sc="a"]');
+  const scB = $('[data-sc="b"]');
+  const scissors = $('.scissors');
+  const heroFades = [$('.hero__sub'), $('.scrollhint')];
+
+  const work = $('[data-work]');
+  const shots = $$('.shot', work);
+  const shotImgs = shots.map((s) => $('img', s));
+  const titles = $$('[data-wt]', work).map((w) => [...w.children]);
+  const outline = $('.work__outline rect');
+  const workBar = $('[data-workbar]');
+  const cur = $('[data-cur]');
+  const N = shots.length;
+
+  const hs = $('[data-hscroll]');
+  const track = $('[data-track]');
+  const cards = $$('.card', track);
+  const svcBar = $('[data-svcbar]');
+
+  const parallax = $$('[data-parallax]');
+  const reveals = $$('[data-reveal]');
+  const wordBlocks = $$('[data-words]').map((el) => ({ el, spans: $$('.w > span', el) }));
+  const fades = $$('[data-fade]');
+  const marquees = $$('[data-marquee]').map((el) => ({ el, dir: +el.dataset.marquee, w: 0 }));
+
+  const geo = new Map(); // element -> { top, h }
+
+  function measure() {
+    vw = innerWidth;
+    vh = innerHeight;
+    // transforms would skew getBoundingClientRect, so clear them first
+    parallax.forEach((el) => (el.style.transform = ''));
+    track.style.transform = '';
+    const read = (el) => {
+      const r = el.getBoundingClientRect();
+      geo.set(el, { top: r.top + scrollY, h: r.height });
+    };
+    [hero, work, hs, ...reveals, ...parallax, ...fades, ...wordBlocks.map((b) => b.el)].forEach(read);
+    marquees.forEach((m) => (m.w = m.el.scrollWidth / 2));
+    lastY = -1;
+  }
+
+  /* ---------- render ---------- */
+  let scrubChars = false;
+
+  function renderHero() {
+    const g = geo.get(hero);
+    const p = clamp(y / (g.h - vh));
+    const snip = ease(clamp(p / 0.65));
+    const theta = 30 * (1 - snip);
+    scA.setAttribute('transform', `rotate(${theta} 200 230)`);
+    scB.setAttribute('transform', `rotate(${-theta} 200 230)`);
+    scissors.style.transform = `translate3d(0, ${-p * 8}vh, 0) scale(${1 + p * 0.28})`;
+    scissors.style.opacity = 1 - clamp((p - 0.82) / 0.18);
+
+    if (scrubChars) {
+      const o = 1 - clamp((p - 0.4) / 0.45);
+      heroChars.forEach((row) => {
+        const mid = (row.length - 1) / 2;
+        row.forEach((c, i) => {
+          const dx = (i - mid) * p * vw * 0.05;
+          const dy = -p * vh * (0.12 + (i % 2 ? 0.1 : 0.02) + i * 0.015);
+          c.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+          c.style.opacity = o;
+        });
+      });
+    }
+    const f = 1 - clamp(p / 0.15);
+    heroFades.forEach((el) => (el.style.opacity = f));
+  }
+
+  function renderWork() {
+    const g = geo.get(work);
+    const P = clamp((y - g.top) / (g.h - vh));
+    const entry = clamp(1 - (g.top - y) / vh);
+    const l = P * N;
+
+    const rs = shots.map((_, i) => {
+      if (i === 0) return ease(entry);
+      return ease(clamp((l - (i - 0.3)) / 0.6));
+    });
+
+    shots.forEach((s, i) => {
+      const r = rs[i];
+      s.style.clipPath = `inset(${(1 - r) * 100}% 0 0 0)`;
+      const covered = i < N - 1 ? rs[i + 1] : 0;
+      shotImgs[i].style.transform = `translate3d(0, ${-covered * 7}%, 0) scale(${1.35 - 0.35 * r + covered * 0.04})`;
+      s.style.zIndex = i + 1;
+    });
+
+    titles.forEach((els, i) => {
+      const exit = i === N - 1 ? 0 : clamp((l - (i + 0.7)) / 0.4);
+      els.forEach((el, k) => {
+        const enter = i === 0 ? ease(entry) : clamp((l - (i - 0.3 + k * 0.08)) / 0.4);
+        const yy = (1 - ease(enter)) * 108 - ease(exit) * 108;
+        el.style.transform = `translate3d(0, ${yy * 2.4}px, 0)`;
+      });
+    });
+
+    const idx = Math.min(N - 1, Math.floor(l + 0.3));
+    const label = String(idx + 1).padStart(2, '0');
+    if (cur.textContent !== label) cur.textContent = label;
+
+    outline.style.strokeDashoffset = 1 - ease(clamp(entry * 1.1));
+    workBar.style.transform = `scaleX(${P})`;
+  }
+
+  function renderServices() {
+    const g = geo.get(hs);
+    const P = clamp((y - g.top) / (g.h - vh));
+    const travel = Math.max(0, track.scrollWidth - vw);
+    const tx = -P * travel;
+    track.style.transform = `translate3d(${tx}px, 0, 0)`;
+    cards.forEach((c) => {
+      const x = c.offsetLeft + tx;
+      const r = ease(clamp((vw * 0.98 - x) / (vw * 0.38)));
+      c.style.clipPath = `inset(0 0 0 ${(1 - r) * 100}%)`;
+      const line = $('.card__line', c);
+      if (line) line.style.transform = `scaleX(${ease(clamp((r - 0.5) / 0.5))})`;
+    });
+    svcBar.style.transform = `scaleX(${P})`;
+  }
+
+  function renderScrollItems() {
+    wordBlocks.forEach(({ el, spans }) => {
+      const g = geo.get(el);
+      const p = clamp((y + vh * 0.9 - g.top) / (vh * 0.5 + g.h * 0.55));
+      const n = spans.length;
+      spans.forEach((s, k) => {
+        const local = clamp((p * (n + 3) - k) / 3);
+        s.style.transform = `translate3d(0, ${(1 - ease(local)) * 112}%, 0)`;
+      });
+    });
+
+    fades.forEach((el) => {
+      const g = geo.get(el);
+      const p = ease(clamp((y + vh * 0.94 - g.top) / (vh * 0.3)));
+      el.style.opacity = p;
+      el.style.transform = `translate3d(0, ${(1 - p) * 24}px, 0)`;
+    });
+
+    parallax.forEach((el) => {
+      const g = geo.get(el);
+      const off = (y + vh / 2) - (g.top + g.h / 2);
+      el.style.transform = `translate3d(0, ${off * +el.dataset.parallax}px, 0)`;
+    });
+
+    reveals.forEach((el) => {
+      const g = geo.get(el);
+      const par = el.closest('[data-parallax]');
+      const shift = par ? ((y + vh / 2) - (geo.get(par).top + geo.get(par).h / 2)) * +par.dataset.parallax : 0;
+      const p = ease(clamp((y + vh * 0.96 - (g.top + shift)) / (vh * 0.8)));
+      el.style.clipPath = `inset(${(1 - p) * 100}% 0 0 0)`;
+      const img = $('img', el);
+      if (img) img.style.transform = `scale(${1.3 - 0.3 * p})`;
+    });
+
+    const skew = clamp(vel * 0.18, -9, 9);
+    marquees.forEach((m) => {
+      const shift = (y * 0.4) % m.w;
+      const x = m.dir > 0 ? -shift : -m.w + shift;
+      m.el.style.transform = `translate3d(${x}px, 0, 0) skewX(${-skew * m.dir}deg)`;
+    });
+  }
+
+  function tick() {
+    const target = scrollY;
+    const prev = y;
+    y += (target - y) * LERP;
+    if (Math.abs(target - y) < 0.05) y = target;
+    vel += ((y - prev) - vel) * 0.2;
+
+    if (y !== lastY || Math.abs(vel) > 0.01) {
+      lastY = y;
+      renderHero();
+      renderWork();
+      renderServices();
+      renderScrollItems();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ---------- cursor ---------- */
+  const cursor = $('.cursor');
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    let mx = vw / 2, my = vh / 2, cx = mx, cy = my;
+    addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; });
+    (function loop() {
+      cx += (mx - cx) * 0.2;
+      cy += (my - cy) * 0.2;
+      cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
+      requestAnimationFrame(loop);
+    })();
+    $$('[data-cursor], .nav a').forEach((el) => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('is-big'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('is-big'));
+    });
+  }
+
+  /* ---------- nav anchors (work with lerped scroll) ---------- */
+  $$('a[href^="#"]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href');
+      const target = id === '#top' ? null : $(id);
+      if (id !== '#top' && !target) return;
+      e.preventDefault();
+      const top = target ? target.getBoundingClientRect().top + scrollY : 0;
+      scrollTo({ top, behavior: reduce ? 'instant' : 'smooth' });
+    });
+  });
+
+  /* ---------- loader ---------- */
+  const countEl = $('[data-count]');
+  const barEl = $('[data-bar]');
+  const DURATION = reduce ? 200 : 1800;
+  const t0 = performance.now();
+
+  function load(now) {
+    const p = clamp((now - t0) / DURATION);
+    const v = Math.round(ease(p) * 100);
+    countEl.textContent = v;
+    barEl.style.transform = `scaleX(${v / 100})`;
+    if (p < 1) return requestAnimationFrame(load);
+    setTimeout(() => {
+      document.body.classList.remove('is-loading');
+      document.body.classList.add('is-ready');
+      setTimeout(() => {
+        heroChars.flat().forEach((c) => { c.style.transition = 'none'; });
+        scrubChars = true;
+        lastY = -1;
+      }, reduce ? 0 : 2400);
+    }, 250);
+  }
+  requestAnimationFrame(load);
+
+  /* ---------- boot ---------- */
+  measure();
+  addEventListener('resize', measure);
+  addEventListener('load', measure);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
